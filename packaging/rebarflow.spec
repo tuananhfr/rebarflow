@@ -11,7 +11,8 @@ a = Analysis(
     binaries=[],
     datas=[(str(ROOT / "docs"), "docs")],   # GHI-CHU-CONG-THUC-GOC.md đi kèm app
     hiddenimports=[],
-    excludes=["tkinter", "unittest", "pydoc"],
+    # KHÔNG exclude "unittest": ezdxf import nó lúc runtime (đã dính lỗi thật)
+    excludes=["tkinter"],
     noarchive=False,
 )
 pyz = PYZ(a.pure)
