@@ -2,8 +2,9 @@
 
 from pathlib import Path
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QTimer
 from PySide6.QtWidgets import (
+    QApplication,
     QFileDialog,
     QMainWindow,
     QMessageBox,
@@ -19,7 +20,9 @@ from rebarflow.core.safe_import import load_safe
 from rebarflow.ui.reactions_tab import ReactionsTab
 from rebarflow.ui.settings_dialog import SettingsDialog
 from rebarflow.ui.strips_tab import StripsTab
+from rebarflow.ui.update_dialog import UpdateDialog
 from rebarflow.ui.workers import FuncWorker
+from rebarflow.updater.version_check import check_update
 
 
 class MainWindow(QMainWindow):
@@ -50,10 +53,15 @@ class MainWindow(QMainWindow):
         tb.addAction("📊 Xuất báo cáo", self._export_report)
         tb.addSeparator()
         tb.addAction("⚙ Cài đặt", self._settings)
+        tb.addAction("🔄 Kiểm tra cập nhật", self._check_update_manual)
 
         self.statusBar().showMessage("Sẵn sàng — mở file SAFE .mdb để bắt đầu.")
         self.strips_tab.status_message.connect(self.statusBar().showMessage)
         self.reactions_tab.status_message.connect(self.statusBar().showMessage)
+
+        self._update_worker: FuncWorker | None = None
+        # check update nền sau khi UI hiện 3s — mọi lỗi mạng nuốt im lặng
+        QTimer.singleShot(3000, self._check_update_silent)
 
     # ---- mở file (worker nền + progress) ----
     def _open_safe(self):
@@ -139,6 +147,52 @@ class MainWindow(QMainWindow):
     def _settings(self):
         if SettingsDialog(self._cfg, self).exec():
             config.save(self._cfg)
+
+    # ---- update ----
+    def _check_update_silent(self):
+        self._start_update_check(self._on_update_silent, on_fail=None)
+
+    def _check_update_manual(self):
+        self._start_update_check(
+            self._on_update_manual,
+            on_fail=lambda e: QMessageBox.warning(
+                self, "Kiểm tra cập nhật",
+                f"Không kiểm tra được (mạng/GitHub?):\n{e}",
+            ),
+        )
+
+    def _start_update_check(self, on_ok, on_fail):
+        if self._update_worker and self._update_worker.isRunning():
+            return
+        self._update_worker = FuncWorker(check_update, __version__)
+        self._update_worker.finished_ok.connect(on_ok)
+        if on_fail:
+            self._update_worker.failed.connect(on_fail)
+
+        self._update_worker.start()
+
+    def _on_update_silent(self, info):
+        if info and info.version != self._cfg.get("skip_version"):
+            self._show_update_dialog(info)
+
+    def _on_update_manual(self, info):
+        if info:
+            self._show_update_dialog(info)
+        else:
+            QMessageBox.information(
+                self, "Kiểm tra cập nhật",
+                f"Đang dùng bản mới nhất (v{__version__}).",
+            )
+
+    def _show_update_dialog(self, info):
+        dlg = UpdateDialog(info, self)
+        result = dlg.exec()
+        if dlg.skipped:
+            self._cfg["skip_version"] = info.version
+            config.save(self._cfg)
+        elif result == UpdateDialog.Accepted:
+            # installer đang chạy — thoát app để nó ghi đè được thư mục cài
+            QApplication.quit()
 
     # ---- đóng app: lưu config ----
     def closeEvent(self, event):

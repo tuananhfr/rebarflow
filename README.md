@@ -10,7 +10,7 @@ App desktop Windows tính **thép đài cọc** từ file `.mdb` export bởi SA
 - [x] **M1** — core engine (đọc mdb, gom nội lực per strip, công thức As 2 chế độ) + golden tests + CLI
 - [x] **M2** — xuất DXF (strips + map phản lực) + báo cáo xlsx
 - [x] **M3** — UI desktop (PySide6)
-- [ ] **M4** — auto-update (GitHub Releases) + installer (PyInstaller + Inno Setup)
+- [x] **M4** — auto-update (GitHub Releases) + installer (PyInstaller + Inno Setup)
 - [ ] **M5** — beta chạy song song với Excel trên dự án thật
 
 ## Chạy app
@@ -35,3 +35,17 @@ pytest
 ```
 
 **Lưu ý:** file dữ liệu dự án thật (`.mdb`, `.xls`) và golden data trích từ chúng **không commit** vào repo (xem `.gitignore`). Để chạy đủ golden tests trên máy mới: đặt file gốc vào `tests/fixtures/` rồi chạy `python tests/tools/extract_golden.py`.
+
+## Build installer & phát hành
+
+```powershell
+powershell -File packaging\build.ps1
+# → chạy pytest → PyInstaller (dist\rebarflow\) → Inno Setup (dist\rebarflow-setup-x.y.z.exe)
+# Cần cài Inno Setup 6: https://jrsoftware.org/isdl.php
+```
+
+Quy trình phát hành bản mới:
+1. Sửa `rebarflow/__version__.py` (vd `"1.1.0"`)
+2. `powershell -File packaging\build.ps1`
+3. Tạo GitHub Release tag `v1.1.0` trên repo này, body = changelog, đính kèm `rebarflow-setup-1.1.0.exe`
+4. Mọi máy đang chạy bản cũ sẽ tự thấy thông báo cập nhật ở lần mở app sau (check nền qua GitHub Releases API; máy không có mạng vẫn dùng app bình thường)
