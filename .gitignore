@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+build/
+dist/
+*.egg-info/
+
+# ── DỮ LIỆU DỰ ÁN THẬT — KHÔNG BAO GIỜ PUSH ─────────────────────────
+# File gốc của công ty (Excel tính + mdb export SAFE/ETABS) và mọi thứ
+# trích/copy từ chúng chỉ giữ ở máy local. Repo chỉ chứa CODE.
+*.mdb
+*.xls
+*.xlsx
+tests/fixtures/
+tests/golden/*.json

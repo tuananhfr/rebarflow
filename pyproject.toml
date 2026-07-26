@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rebarflow"
+description = "Tính thép đài cọc từ file SAFE/ETABS .mdb, xuất DXF + báo cáo (thay thế file Excel VBA)"
+requires-python = ">=3.11"
+dynamic = ["version"]
+dependencies = [
+    "PySide6>=6.7",
+    "ezdxf>=1.3",
+    "openpyxl>=3.1",
+    "access-parser>=0.0.6",
+    "requests>=2.31",
+    "packaging>=24.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "pyinstaller>=6"]
+
+[tool.setuptools.packages.find]
+include = ["rebarflow*"]
+
+[tool.setuptools.dynamic]
+version = { attr = "rebarflow.__version__.__version__" }
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
