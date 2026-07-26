@@ -5,16 +5,25 @@ NGAY dòng đó (calc nhẹ, đồng bộ). Cột Check tô màu xanh/đỏ/cam.
 """
 
 from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt, Signal
-from PySide6.QtGui import QAction, QColor, QKeySequence
+from PySide6.QtGui import QAction, QColor, QKeySequence, QPalette
 from PySide6.QtWidgets import QApplication, QMenu, QTableView
 
 from rebarflow.core.models import MaterialParams, StripDesign
 from rebarflow.core.rebar_calc import calc_strip
 
+# Màu check là pastel SÁNG cố định → chữ trong ô check phải ép ĐEN
+# (nếu để chữ theo theme, dark mode sẽ ra chữ trắng trên nền sáng — tàng hình)
 _COLOR_OK = QColor("#c6efce")
 _COLOR_FAIL = QColor("#ffc7ce")
 _COLOR_WARN = QColor("#ffeb9c")
-_COLOR_READONLY = QColor("#f5f5f5")
+_COLOR_CHECK_TEXT = QColor("#1a1a1a")
+
+
+def _readonly_color() -> QColor:
+    """Nền cột kết quả (readonly): lệch nhẹ so với nền theme hiện tại —
+    sáng hơn trong dark mode, tối hơn trong light mode."""
+    base = QApplication.palette().color(QPalette.Base)
+    return base.lighter(130) if base.value() < 128 else base.darker(104)
 
 _HEADERS = [
     "STT", "Tên Đài", "h đài\n(m)", "Strip", "Rộng\n(m)",
@@ -106,7 +115,11 @@ class StripResultsModel(QAbstractTableModel):
             if col in (COL_CHECK_TOP, COL_CHECK_BOT):
                 return _check_color(d.check_top if col == COL_CHECK_TOP else d.check_bot)
             if col not in _EDITABLE:
-                return _COLOR_READONLY
+                return _readonly_color()
+        if role == Qt.ForegroundRole and col in (COL_CHECK_TOP, COL_CHECK_BOT):
+            v = d.check_top if col == COL_CHECK_TOP else d.check_bot
+            if _check_color(v) is not None:   # có nền pastel sáng → chữ đen
+                return _COLOR_CHECK_TEXT
         if role == Qt.TextAlignmentRole and col != COL_NAME:
             return int(Qt.AlignCenter)
         if role == Qt.ToolTipRole and col in (COL_CHECK_TOP, COL_CHECK_BOT):
