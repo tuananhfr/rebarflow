@@ -21,15 +21,20 @@ if ($LASTEXITCODE -ne 0) { Write-Error "PyInstaller FAILED." }
 
 Write-Host "[3/3] Inno Setup..." -ForegroundColor Cyan
 $iscc = Get-Command iscc.exe -ErrorAction SilentlyContinue
-if ($null -eq $iscc) {
-    $default = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
-    if (Test-Path $default) { $iscc = $default }
-    else {
+if ($null -ne $iscc) { $iscc = $iscc.Source }
+else {
+    $candidates = @(
+        "C:\Program Files (x86)\Inno Setup 6\ISCC.exe",
+        "C:\Program Files\Inno Setup 6\ISCC.exe",
+        "$env:LOCALAPPDATA\Programs\Inno Setup 6\ISCC.exe"
+    )
+    $iscc = $candidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+    if ($null -eq $iscc) {
         Write-Warning "Khong tim thay Inno Setup (iscc.exe). Cai tu https://jrsoftware.org/isdl.php"
         Write-Warning "Da build xong dist\rebarflow\ - chi thieu buoc dong goi setup.exe."
         exit 1
     }
-} else { $iscc = $iscc.Source }
+}
 
 & $iscc "/DMyAppVersion=$version" "packaging\installer.iss"
 if ($LASTEXITCODE -ne 0) { Write-Error "Inno Setup FAILED." }
