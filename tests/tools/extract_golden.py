@@ -77,7 +77,22 @@ def main() -> None:
         })
         r += 1
 
+    geo = wb["Object Geometry - Design Strips"]
+    geometry = []
+    r = 2
+    while geo.cell(row=r, column=1).value not in (None, ""):
+        geometry.append({
+            "strip": geo[f"A{r}"].value,
+            "point": geo[f"B{r}"].value,
+            "x": geo[f"C{r}"].value,
+            "y": geo[f"D{r}"].value,
+        })
+        r += 1
+
     OUT_DIR.mkdir(parents=True, exist_ok=True)
+    (OUT_DIR / "geometry_sample.json").write_text(
+        json.dumps(geometry, indent=1, ensure_ascii=False), encoding="utf-8"
+    )
     (OUT_DIR / "golden_d1.json").write_text(
         json.dumps({"params": params, "rows": rows}, indent=1, ensure_ascii=False),
         encoding="utf-8",
@@ -85,7 +100,8 @@ def main() -> None:
     (OUT_DIR / "strip_forces_sample.json").write_text(
         json.dumps(forces, indent=1, ensure_ascii=False), encoding="utf-8"
     )
-    print(f"OK: {len(rows)} dòng golden D1, {len(forces)} dòng strip forces")
+    print(f"OK: {len(rows)} dòng golden D1, {len(forces)} dòng strip forces, "
+          f"{len(geometry)} dòng geometry")
 
 
 if __name__ == "__main__":

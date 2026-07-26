@@ -31,6 +31,8 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--mode", choices=["excel", "tcvn"], default="excel",
                    help="excel = giống Excel gốc (mặc định), tcvn = TCVN chuẩn sách")
     p.add_argument("--h", type=float, default=DEFAULT_H_DAI_M, help="h đài (m), mặc định 1.1")
+    p.add_argument("--dxf", metavar="FILE", help="xuất bản vẽ DXF strips + text thép")
+    p.add_argument("--report", metavar="FILE", help="xuất báo cáo xlsx")
     args = p.parse_args(argv)
 
     try:
@@ -72,6 +74,25 @@ def main(argv: list[str] | None = None) -> int:
     print(f"\n{len(designs)} strips — chế độ: "
           + ("giống Excel gốc" if args.mode == "excel" else "TCVN chuẩn sách")
           + f" — h đài = {args.h} m (chỉnh bằng --h)")
+
+    if args.dxf:
+        from rebarflow.export.dxf_strips import export_strips_dxf
+
+        if not model.geometry:
+            print("LỖI: file không có bảng geometry — không xuất được DXF strips. "
+                  "Export lại từ SAFE, tick bảng «Object Geometry - Design Strips».",
+                  file=sys.stderr)
+            return 1
+        skipped = export_strips_dxf(designs, model.geometry, args.dxf)
+        print(f"Đã xuất DXF: {args.dxf}"
+              + (f" (bỏ qua {len(skipped)} strip thiếu geometry: {', '.join(skipped)})"
+                 if skipped else ""))
+
+    if args.report:
+        from rebarflow.export.report_xlsx import export_report
+
+        export_report(designs, mat, args.report, source=model.source_path)
+        print(f"Đã xuất báo cáo: {args.report}")
     return 0
 
 
