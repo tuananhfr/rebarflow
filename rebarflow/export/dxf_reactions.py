@@ -30,7 +30,11 @@ def filter_reactions(
     return rs
 
 
-def export_reactions_dxf(reactions: list[JointReaction], path: str) -> int:
+def export_reactions_dxf(
+    reactions: list[JointReaction],
+    path: str,
+    style: st.DxfStyle = st.DEFAULT_STYLE,
+) -> int:
     """Ghi file DXF, trả về số joint đã vẽ."""
     doc = ezdxf.new(st.DXF_VERSION)
     doc.layers.add(st.LAYER_REACTION, color=st.COLOR_REACTION)
@@ -44,9 +48,9 @@ def export_reactions_dxf(reactions: list[JointReaction], path: str) -> int:
         msp.add_point((x, y), dxfattribs={"layer": st.LAYER_REACTION})
         text = msp.add_text(
             f"Fz = {round(r.fz, 1)}T",       # giống VBA: "Fz = " & Round(..,1) & "T"
-            dxfattribs={"height": st.TEXT_HEIGHT, "layer": st.LAYER_REACTION},
+            dxfattribs={"height": style.text_height, "layer": st.LAYER_REACTION},
         )
-        text.set_placement((x + st.TEXT_OFFSET, y + st.TEXT_OFFSET))
+        text.set_placement((x + style.text_offset, y + style.text_offset))
         n += 1
 
     doc.saveas(path)

@@ -18,3 +18,26 @@ LAYER_REACTION = "RF_REACTION"
 COLOR_REACTION = 3      # VBA: Phanluc.Color = acGreen
 
 DXF_VERSION = "R2010"   # AutoCAD 2010+ mở được
+
+
+from dataclasses import dataclass
+
+
+@dataclass
+class DxfStyle:
+    """Các giá trị user chỉnh được trong Settings dialog (lưu vào config.json)."""
+
+    text_height: float = TEXT_HEIGHT
+    text_offset: float = TEXT_OFFSET
+    line_spacing: float = LINE_SPACING
+
+    @classmethod
+    def from_config(cls, cfg: dict) -> "DxfStyle":
+        return cls(
+            text_height=float(cfg.get("dxf_text_height", TEXT_HEIGHT)),
+            text_offset=float(cfg.get("dxf_text_offset", TEXT_OFFSET)),
+            line_spacing=float(cfg.get("dxf_line_spacing", LINE_SPACING)),
+        )
+
+
+DEFAULT_STYLE = DxfStyle()

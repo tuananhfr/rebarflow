@@ -19,6 +19,9 @@ dependencies = [
 [project.optional-dependencies]
 dev = ["pytest>=8", "pyinstaller>=6"]
 
+[project.gui-scripts]
+rebarflow = "rebarflow.main:main"
+
 [tool.setuptools.packages.find]
 include = ["rebarflow*"]
 

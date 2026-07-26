@@ -17,6 +17,7 @@ def export_strips_dxf(
     designs: list[StripDesign],
     geometries: list[StripGeometry],
     path: str,
+    style: st.DxfStyle = st.DEFAULT_STYLE,
 ) -> list[str]:
     """Ghi file DXF. Trả về danh sách strip bị bỏ qua vì không có geometry
     (caller hiển thị cảnh báo)."""
@@ -32,7 +33,7 @@ def export_strips_dxf(
         if g is None:
             skipped.append(d.env.strip)
             continue
-        _draw_strip(msp, d, g)
+        _draw_strip(msp, d, g, style)
 
     doc.saveas(path)
     return skipped
@@ -48,7 +49,7 @@ def _strip_angle_deg(x1: float, y1: float, x2: float, y2: float) -> float:
     return angle
 
 
-def _draw_strip(msp, d: StripDesign, g: StripGeometry) -> None:
+def _draw_strip(msp, d: StripDesign, g: StripGeometry, style: st.DxfStyle) -> None:
     x1, y1 = g.x1 * st.SCALE, g.y1 * st.SCALE
     x2, y2 = g.x2 * st.SCALE, g.y2 * st.SCALE
 
@@ -60,9 +61,9 @@ def _draw_strip(msp, d: StripDesign, g: StripGeometry) -> None:
 
     # vị trí text: giống macro gốc — ngoài đầu strip phía tọa độ lớn
     if horizontal:
-        tx, ty = max(x1, x2) + st.TEXT_OFFSET, y1
+        tx, ty = max(x1, x2) + style.text_offset, y1
     else:
-        tx, ty = x1, max(y1, y2) + st.TEXT_OFFSET
+        tx, ty = x1, max(y1, y2) + style.text_offset
 
     lines = (
         f"DUOI-D{d.dia_bot} A{d.spacing_bot}",
@@ -71,11 +72,11 @@ def _draw_strip(msp, d: StripDesign, g: StripGeometry) -> None:
     )
     for i, content in enumerate(lines):
         if horizontal:
-            pos = (tx, ty + i * st.LINE_SPACING)
+            pos = (tx, ty + i * style.line_spacing)
         else:
-            pos = (tx - i * st.LINE_SPACING, ty)
+            pos = (tx - i * style.line_spacing, ty)
         text = msp.add_text(
             content,
-            dxfattribs={"height": st.TEXT_HEIGHT, "rotation": angle, "layer": layer},
+            dxfattribs={"height": style.text_height, "rotation": angle, "layer": layer},
         )
         text.set_placement(pos)

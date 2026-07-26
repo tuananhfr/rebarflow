@@ -9,14 +9,20 @@ App desktop Windows tính **thép đài cọc** từ file `.mdb` export bởi SA
 
 - [x] **M1** — core engine (đọc mdb, gom nội lực per strip, công thức As 2 chế độ) + golden tests + CLI
 - [x] **M2** — xuất DXF (strips + map phản lực) + báo cáo xlsx
-- [ ] **M3** — UI desktop (PySide6)
+- [x] **M3** — UI desktop (PySide6)
 - [ ] **M4** — auto-update (GitHub Releases) + installer (PyInstaller + Inno Setup)
 - [ ] **M5** — beta chạy song song với Excel trên dự án thật
 
-## Chạy thử (M1 — CLI tạm)
+## Chạy app
 
 ```bash
 pip install -e .[dev]
+python -m rebarflow.main        # mở app desktop (2 tab: Thép đài / Phản lực chân cột)
+```
+
+## CLI (không cần UI)
+
+```bash
 python -m rebarflow.cli duong/dan/file_safe.mdb          # chế độ giống Excel gốc (mặc định)
 python -m rebarflow.cli duong/dan/file_safe.mdb --mode tcvn --h 1.2
 python -m rebarflow.cli file.mdb --dxf banve.dxf --report baocao.xlsx   # xuất bản vẽ + báo cáo
