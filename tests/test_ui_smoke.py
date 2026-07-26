@@ -29,10 +29,11 @@ def app():
 @pytest.fixture()
 def tab(app, mong_mdb_path, monkeypatch):
     t = StripsTab(dict(DEFAULTS))
-    # chặn QMessageBox cảnh báo thiếu bảng (offscreen không có người bấm OK)
-    monkeypatch.setattr(
-        "rebarflow.ui.strips_tab.QMessageBox.warning", lambda *a, **k: None
-    )
+    # chặn mọi popup QMessageBox (offscreen không có người bấm OK)
+    for fn in ("warning", "information", "critical"):
+        monkeypatch.setattr(
+            f"rebarflow.ui.strips_tab.QMessageBox.{fn}", lambda *a, **k: None
+        )
     t.load_safe_model(load_safe(mong_mdb_path))
     return t
 

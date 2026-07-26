@@ -61,12 +61,16 @@ class StripsTab(QWidget):
             msg += f"  |  ⚠ thiếu bảng «{t}»"
         self.status_message.emit(msg)
         if safe.missing_tables:
-            QMessageBox.warning(
-                self, "Thiếu bảng",
-                "File thiếu các bảng sau (vẫn tính được thép):\n- "
+            QMessageBox.information(
+                self, "Import thành công — có lưu ý",
+                f"✔ Đã import xong: {len(designs)} strips, tính thép đầy đủ.\n\n"
+                "Lưu ý: file này được export từ SAFE THIẾU bảng:\n- "
                 + "\n- ".join(safe.missing_tables)
-                + "\n\nThiếu «Object Geometry - Design Strips» thì KHÔNG xuất được "
-                "DXF strips — export lại từ SAFE và tick bảng này nếu cần bản vẽ.",
+                + "\n\nHệ quả duy nhất: chưa xuất được BẢN VẼ DXF strips "
+                "(app không biết tọa độ các dải để vẽ). Bảng tính và báo cáo "
+                "không ảnh hưởng.\n\n"
+                "Khi cần bản vẽ: nhờ người chạy SAFE export lại, trong hộp thoại "
+                "chọn bảng tick thêm «Object Geometry - Design Strips».",
             )
 
     def has_data(self) -> bool:
